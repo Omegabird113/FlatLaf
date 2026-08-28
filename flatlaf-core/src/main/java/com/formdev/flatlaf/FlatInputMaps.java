@@ -16,15 +16,20 @@
 
 package com.formdev.flatlaf;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.InputMap;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
+import javax.swing.UIDefaults;
 import javax.swing.UIDefaults.LazyValue;
+import javax.swing.UIManager;
 import javax.swing.plaf.InputMapUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
 import com.formdev.flatlaf.util.SystemInfo;
 import static javax.swing.text.DefaultEditorKit.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.function.BooleanSupplier;
 
