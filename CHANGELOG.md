@@ -14,6 +14,7 @@ FlatLaf Change Log
   (issue #1135)
 - Make sure that `META-INF/MANIFEST.MF` is first jar entry, so that tools that
   use `JarInputStream` readers see `Multi-Release: true`. (issue #1139)
+- macOS: The `Cmd+Baskspace` and `Cmd+Delete` shortcuts were not supported.
 
 
 ## 3.7.2
