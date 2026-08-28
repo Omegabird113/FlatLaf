@@ -16,16 +16,16 @@
 
 package com.formdev.flatlaf;
 
-import javax.swing.InputMap;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
+import javax.swing.*;
 import javax.swing.UIDefaults.LazyValue;
-import javax.swing.UIManager;
 import javax.swing.plaf.InputMapUIResource;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Utilities;
 import com.formdev.flatlaf.util.SystemInfo;
 import static javax.swing.text.DefaultEditorKit.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -172,6 +172,54 @@ class FlatInputMaps
 			"control shift O", "toggle-componentOrientation", // DefaultEditorKit.toggleComponentOrientation
 		};
 
+		AbstractAction deleteToBeginLineAction = new AbstractAction()
+		{
+			@Override
+			public void actionPerformed( ActionEvent e ) {
+				if ( !(e.getSource() instanceof JTextComponent) ) {
+					return;
+				}
+				JTextComponent textComponent = (JTextComponent) e.getSource();
+
+				if ( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
+					textComponent.replaceSelection("");
+					return;
+				}
+
+				try {
+					int caretPosition = textComponent.getCaretPosition();
+					int lineStart = Utilities.getRowStart(textComponent, caretPosition);
+					if ( lineStart >= 0 && lineStart < caretPosition )
+						textComponent.getDocument().remove( lineStart, caretPosition - lineStart );
+				} catch ( BadLocationException ignored ) {
+				}
+			}
+		};
+
+		AbstractAction deleteToEndLineAction = new AbstractAction()
+		{
+			@Override
+			public void actionPerformed( ActionEvent e ) {
+				if ( !(e.getSource() instanceof JTextComponent) ) {
+					return;
+				}
+				JTextComponent textComponent = (JTextComponent) e.getSource();
+
+				if ( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
+					textComponent.replaceSelection("");
+					return;
+				}
+
+				try {
+					int caretPosition = textComponent.getCaretPosition();
+					int lineEnd = Utilities.getRowEnd(textComponent, caretPosition);
+					if ( lineEnd >= 0 && lineEnd > caretPosition )
+						textComponent.getDocument().remove( caretPosition, lineEnd - caretPosition );
+				} catch ( BadLocationException ignored ) {
+				}
+			}
+		};
+
 		Object[] macCommonTextComponentBindings = SystemInfo.isMacOS ? new Object[] {
 			// move caret one character (without selecting text)
 			"ctrl B", backwardAction,
@@ -213,6 +261,10 @@ class FlatInputMaps
 			// delete previous/next word
 			"ctrl W", deletePrevWordAction,
 			"ctrl D", deleteNextCharAction,
+
+			// delete to line begin/emd with custom actions
+			"meta BACK_SPACE", deleteToBeginLineAction,
+			"meta DELETE", deleteToEndLineAction
 		} : null;
 
 		Object[] singleLineTextComponentBindings = {
