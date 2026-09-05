@@ -215,7 +215,7 @@ class FlatInputMaps
 			"ctrl W", deletePrevWordAction,
 			"ctrl D", deleteNextCharAction,
 
-			// delete to line begin/emd with custom actions
+			// delete to line begin/end with custom actions
 			"meta BACK_SPACE", new FlatTextFieldUI.DeleteToBeginLineAction( "delete-to-begin-line" ),
 			"meta DELETE", new FlatTextFieldUI.DeleteToEndLineAction( "delete-to-end-line" )
 		} : null;
