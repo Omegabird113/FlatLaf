@@ -24,13 +24,9 @@ import javax.swing.UIDefaults;
 import javax.swing.UIDefaults.LazyValue;
 import javax.swing.UIManager;
 import javax.swing.plaf.InputMapUIResource;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.TextAction;
-import javax.swing.text.Utilities;
+import com.formdev.flatlaf.ui.FlatTextFieldUI;
 import com.formdev.flatlaf.util.SystemInfo;
 import static javax.swing.text.DefaultEditorKit.*;
-import java.awt.event.ActionEvent;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -220,8 +216,8 @@ class FlatInputMaps
 			"ctrl D", deleteNextCharAction,
 
 			// delete to line begin/emd with custom actions
-			"meta BACK_SPACE", new DeleteToBeginLineAction( "delete-to-begin-line" ),
-			"meta DELETE", new DeleteToEndLineAction( "delete-to-end-line" )
+			"meta BACK_SPACE", new FlatTextFieldUI.DeleteToBeginLineAction( "delete-to-begin-line" ),
+			"meta DELETE", new FlatTextFieldUI.DeleteToEndLineAction( "delete-to-end-line" )
 		} : null;
 
 		Object[] singleLineTextComponentBindings = {
@@ -665,62 +661,6 @@ class FlatInputMaps
 			}
 
 			return inputMap;
-		}
-	}
-
-	//---- class DeleteToBeginLineAction --------------------------------------
-
-	private static class DeleteToBeginLineAction
-		extends TextAction
-	{
-		public DeleteToBeginLineAction( String name ) {
-			super( name );
-		}
-
-		@Override
-		public void actionPerformed( ActionEvent e ) {
-			JTextComponent textComponent = super.getTextComponent( e );
-
-			if( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
-				textComponent.replaceSelection( "" );
-				return;
-			}
-
-			try {
-				int caretPosition = textComponent.getCaretPosition();
-				int lineStart = Utilities.getRowStart( textComponent, caretPosition );
-				if( lineStart >= 0 && lineStart < caretPosition )
-					textComponent.getDocument().remove( lineStart, caretPosition - lineStart );
-			} catch( BadLocationException ignored ) {
-			}
-		}
-	}
-
-	//---- class DeleteToEndLineAction ----------------------------------------
-
-	private static class DeleteToEndLineAction
-		extends TextAction
-	{
-		public DeleteToEndLineAction( String name ) {
-			super( name );
-		}
-
-		@Override
-		public void actionPerformed( ActionEvent e ) {
-			JTextComponent textComponent = super.getTextComponent( e );
-
-			if( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
-				textComponent.replaceSelection( "" );
-				return;
-			}
-
-			try {
-				int caretPosition = textComponent.getCaretPosition();
-				int lineEnd = Utilities.getRowEnd( textComponent, caretPosition );
-				if( lineEnd >= 0 && lineEnd > caretPosition )
-					textComponent.getDocument().remove( caretPosition, lineEnd - caretPosition );
-			} catch( BadLocationException ignored ) {
-			}
 		}
 	}
 }
