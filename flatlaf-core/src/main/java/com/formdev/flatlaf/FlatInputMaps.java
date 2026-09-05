@@ -16,7 +16,6 @@
 
 package com.formdev.flatlaf;
 
-import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -27,6 +26,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.InputMapUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 import javax.swing.text.Utilities;
 import com.formdev.flatlaf.util.SystemInfo;
 import static javax.swing.text.DefaultEditorKit.*;
@@ -177,54 +177,6 @@ class FlatInputMaps
 			"control shift O", "toggle-componentOrientation", // DefaultEditorKit.toggleComponentOrientation
 		};
 
-		AbstractAction deleteToBeginLineAction = new AbstractAction()
-		{
-			@Override
-			public void actionPerformed( ActionEvent e ) {
-				if ( !(e.getSource() instanceof JTextComponent) ) {
-					return;
-				}
-				JTextComponent textComponent = (JTextComponent) e.getSource();
-
-				if ( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
-					textComponent.replaceSelection("");
-					return;
-				}
-
-				try {
-					int caretPosition = textComponent.getCaretPosition();
-					int lineStart = Utilities.getRowStart(textComponent, caretPosition);
-					if ( lineStart >= 0 && lineStart < caretPosition )
-						textComponent.getDocument().remove( lineStart, caretPosition - lineStart );
-				} catch ( BadLocationException ignored ) {
-				}
-			}
-		};
-
-		AbstractAction deleteToEndLineAction = new AbstractAction()
-		{
-			@Override
-			public void actionPerformed( ActionEvent e ) {
-				if ( !(e.getSource() instanceof JTextComponent) ) {
-					return;
-				}
-				JTextComponent textComponent = (JTextComponent) e.getSource();
-
-				if ( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
-					textComponent.replaceSelection("");
-					return;
-				}
-
-				try {
-					int caretPosition = textComponent.getCaretPosition();
-					int lineEnd = Utilities.getRowEnd(textComponent, caretPosition);
-					if ( lineEnd >= 0 && lineEnd > caretPosition )
-						textComponent.getDocument().remove( caretPosition, lineEnd - caretPosition );
-				} catch ( BadLocationException ignored ) {
-				}
-			}
-		};
-
 		Object[] macCommonTextComponentBindings = SystemInfo.isMacOS ? new Object[] {
 			// move caret one character (without selecting text)
 			"ctrl B", backwardAction,
@@ -268,8 +220,8 @@ class FlatInputMaps
 			"ctrl D", deleteNextCharAction,
 
 			// delete to line begin/emd with custom actions
-			"meta BACK_SPACE", deleteToBeginLineAction,
-			"meta DELETE", deleteToEndLineAction
+			"meta BACK_SPACE", new DeleteToBeginLineAction( "delete-to-begin-line" ),
+			"meta DELETE", new DeleteToEndLineAction( "delete-to-end-line" )
 		} : null;
 
 		Object[] singleLineTextComponentBindings = {
@@ -713,6 +665,62 @@ class FlatInputMaps
 			}
 
 			return inputMap;
+		}
+	}
+
+	//---- class DeleteToBeginLineAction --------------------------------------
+
+	private static class DeleteToBeginLineAction
+		extends TextAction
+	{
+		public DeleteToBeginLineAction( String name ) {
+			super( name );
+		}
+
+		@Override
+		public void actionPerformed( ActionEvent e ) {
+			JTextComponent textComponent = super.getTextComponent( e );
+
+			if( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
+				textComponent.replaceSelection( "" );
+				return;
+			}
+
+			try {
+				int caretPosition = textComponent.getCaretPosition();
+				int lineStart = Utilities.getRowStart( textComponent, caretPosition );
+				if( lineStart >= 0 && lineStart < caretPosition )
+					textComponent.getDocument().remove( lineStart, caretPosition - lineStart );
+			} catch( BadLocationException ignored ) {
+			}
+		}
+	}
+
+	//---- class DeleteToEndLineAction ----------------------------------------
+
+	private static class DeleteToEndLineAction
+		extends TextAction
+	{
+		public DeleteToEndLineAction( String name ) {
+			super( name );
+		}
+
+		@Override
+		public void actionPerformed( ActionEvent e ) {
+			JTextComponent textComponent = super.getTextComponent( e );
+
+			if( textComponent.getSelectionStart() != textComponent.getSelectionEnd() ) {
+				textComponent.replaceSelection( "" );
+				return;
+			}
+
+			try {
+				int caretPosition = textComponent.getCaretPosition();
+				int lineEnd = Utilities.getRowEnd( textComponent, caretPosition );
+				if( lineEnd >= 0 && lineEnd > caretPosition )
+					textComponent.getDocument().remove( caretPosition, lineEnd - caretPosition );
+			} catch( BadLocationException ignored ) {
+			}
 		}
 	}
 }
